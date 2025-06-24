@@ -29,6 +29,15 @@ dat <- read_csv("Size_abundance_data.csv")
 ## Part 1: understanding the effect of temperature and richness on size-abundance scaling
 dat <- dat %>% filter(!(is.na(mean_volume) | is.na(N)))
 
+# testing effect of imbalance in number of replicates across richness treatments
+#dat <- dat %>% filter(replicate < 3)
+
+# average species sizes observed during experiment
+avg_volume <- dat %>% 
+  filter(!(richness %in% c(0)) & day %in% seq(1,42, by=2))  %>%
+  group_by(predicted_species) %>% 
+  summarize(mean_volume = mean(mean_volume, na.rm=T)/1000000000) %>% arrange(mean_volume)
+
 # aggregate on the microcosm level to understand effect of richness and temperature
 dat2 <- dat %>% 
   filter(!(richness %in% c(0)) & day %in% seq(1,42, by=2))  %>%
@@ -99,7 +108,10 @@ p1 <- ggplot() +
                              y = abundance_pred_simple), color='black',linetype="dashed") +
   guides(shape=guide_legend(title="richness"),
          colour=guide_legend(title="temperature")) +
-  labs(x = expression(paste("Log10 Cell Volume (", mu*l, " ,centered)")), y = "Log10 Abundance (Ind. per mL) ") + theme_few() + scale_colour_manual(values=cc) # + xlim(-0.4, 0.4) + ylim(0.5, 3.5) 
+  labs(x = expression(paste("Log10 Cell Volume (", mu*l, " ,centered)")), y = "Log10 Abundance (Ind. per mL) ") + theme_few() + 
+  scale_colour_manual(values=cc) +
+  geom_text(aes(x=Inf, y=Inf, hjust=1.1, vjust=2, label="slope = -0.711 [CI: -0.777 to -0.644]")) # + xlim(-0.4, 0.4) + ylim(0.5, 3.5) 
+p1
 
 p2 <- ggplot() +
   geom_point(data = dat4, aes(x = volume_c,
@@ -179,6 +191,16 @@ dat2 <- dat %>%
             abundance = sum(N)*13.84/0.6,
             rel_richness=mean(rel_richness)) 
 
+
+# show how evenness / relative richness change through time
+cc <- scales::seq_gradient_pal("blue", "red", "Lab")(seq(0,1,length.out=6))
+ggplot() + geom_point(data=dat2, aes(y=rel_richness, x=day, colour=as.factor(temperature)), alpha=.2) +
+  stat_smooth(data=dat2, aes(y=rel_richness, x=day), method="lm", formula = "y ~ 1", colour="black") + 
+  ylab("Relative richness") + xlab("Day") + theme_bw() + scale_color_manual(values=cc) + guides(colour=guide_legend(title="Temperature")) +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) + facet_wrap(~richness, ncol=6)
+ggsave("output/Figure_S2.png")
+
+
 dat2 <- dat2 %>% filter(mean_volume > 0 & abundance > 0)
 
 dat3 <- dat2 %>%
@@ -206,7 +228,7 @@ dat3 <- dat3 %>% mutate(time = day)
 dat4 <- dat3 %>% ungroup() %>% mutate(temp_c = temperature - mean(temperature, na.rm=T),
                                       # uncomment if analysis should be run on realized rather than initial richness
                                       rich_c = richness - mean(richness, na.rm=T),
-                                      #rich_c = rel_richness - mean(rel_richness, na.rm=T),
+                                      rich_c = rel_richness - mean(rel_richness, na.rm=T),
                                       major_c = mean_major - median(mean_major, na.rm=T),
                                       volume_c = mean_volume - mean(mean_volume, na.rm=T),
                                       temp_fac = as.factor(temperature),
@@ -297,13 +319,12 @@ gg_mtr <- ggplot() +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
 
 cowplot::plot_grid(gg_volume, gg_mr, gg_mt, gg_mtr, align = "hv",  ncol=1)
-#ggsave(here("output/Figure_S2.png"), width=12, height=9)
+#ggsave(here("output/Figure_S3.png"), width=12, height=9)
 
 
 
 ##model across time selected#
 
-#FIGURE 8
 #plot richness x temperature across day 10, 17, 24, 31
 
 ##model across time selected#
@@ -314,24 +335,24 @@ summary(mixed.slope3)
 cc <- scales::seq_gradient_pal("blue", "red", "Lab")(seq(0,1,length.out=6))
 
 p1 <- plot_model(mixed.slope3, type = "pred", terms = c("volume_c", "temp_c", "rich_c[1, 6]", "day_fac [11]"), 
-      show.values = T, ci.lvl = NA, title = "Day 11", legend.title = "Temperature") + 
+                 show.values = T, ci.lvl = NA, title = "Day 11", legend.title = "Temperature") + 
   geom_abline(intercept=3.7, slope=-0.75, linetype="dashed")+ 
   scale_colour_manual(values=cc, labels=seq(15,25, by=2)) + 
   theme_few() + labs(x = expression(paste("Log10 Cell Volume (", mu*l, " ,centered)")), y = "Log10 Abundance (Ind. per mL) ") 
 
 p2 <- plot_model(mixed.slope3, type = "pred", terms = c("volume_c", "temp_c", "rich_c[1, 6]", "day_fac [17]"), 
-           ci.lvl = NA, title = "Day 17", legend.title = "Temperature") + 
+                 ci.lvl = NA, title = "Day 17", legend.title = "Temperature") + 
   geom_abline(intercept=3.7, slope=-0.75, linetype="dashed")+ 
   scale_colour_manual(values=cc, labels=seq(15,25, by=2)) + 
   theme_few()  + labs(x = expression(paste("Log10 Cell Volume (", mu*l, " ,centered)")), y = "Log10 Abundance (Ind. per mL) ")
 
 p3 <- plot_model(mixed.slope3, type = "pred", terms = c("volume_c", "temp_c", "rich_c[1, 6]", "day_fac [23]"), 
-           ci.lvl = NA, title = "Day 23", legend.title = "Temperature") + 
+                 ci.lvl = NA, title = "Day 23", legend.title = "Temperature") + 
   geom_abline(intercept=3.7, slope=-0.75, linetype="dashed")+ scale_colour_manual(values=cc, labels=seq(15,25, by=2)) + 
   theme_few() + labs(x = expression(paste("Log10 Cell Volume (", mu*l, " ,centered)")), y = "Log10 Abundance (Ind. per mL) ")
 
 p4 <- plot_model(mixed.slope3, type = "pred", terms = c("volume_c", "temp_c", "rich_c[1, 6]", "day_fac [29]"), 
-           ci.lvl = NA, title = "Day 29", legend.title = "Temperature") + 
+                 ci.lvl = NA, title = "Day 29", legend.title = "Temperature") + 
   geom_abline(intercept=3.7, slope=-0.75, linetype="dashed")+ scale_colour_manual(values=cc, labels=seq(15,25, by=2))  + 
   theme_few() + labs(x = expression(paste("Log10 Cell Volume (", mu*l, " ,centered)")), y = "Log10 Abundance (Ind. per mL) ")
 
@@ -357,9 +378,9 @@ p4$data$facet <- factor(case_when(
 ), levels=c("richness = 1", "richness = 6"))
 
 
-p <- (p1 + p3)  / (p2 + p4) + patchwork::plot_layout(guides = 'collect', axis_titles = 'collect') + patchwork::plot_annotation(tag_levels = 'A') & theme(legend.position = "bottom")
+p <- (p1 + p2)  / (p3 + p4) + patchwork::plot_layout(guides = 'collect', axis_titles = 'collect') + patchwork::plot_annotation(tag_levels = 'A') & theme(legend.position = "bottom")
 p
-ggsave(here("output/Figure_S3.png"), width=10, height=8)
+ggsave(here("output/Figure_S5.png"), width=10, height=8)
 
 
 
@@ -539,3 +560,9 @@ gg_mtr <- ggplot() +
 
 gg_volume + gg_mr + gg_mt + gg_mtr + patchwork::plot_layout(guides = 'collect', ncol=1) + patchwork::plot_annotation(tag_levels = 'A', caption = 'V = volume, R = richness, T = temperature') & theme(legend.position = "bottom", plot.caption = element_text(hjust = 0))
 ggsave(here("output/Figure4.png"), width=8, height=10)
+
+
+
+
+
+
