@@ -1,0 +1,12 @@
+Variable,Units,Description,Number of levels,Notes
+combination,,Species composition of microcosm,53,
+temperature,degrees Celsius,Temperature treatment,,
+richness,Number of species,Richness treatment,6,
+replicate,,Replicate identifier,2-6,
+predicted_spec,,Species name,6,
+microcosmID,,Unique identifier for each microcosm,690,
+day,day,Day since start,42,
+N,individuals per mL,Number of individuals,,
+mean_major,micrometer,Major axis of ellipse fitted to each individual,,
+mean_volume,millicubicmeter,Mean volume,,
+rel_richness,,Shannon diversity of a given microcosm,,
