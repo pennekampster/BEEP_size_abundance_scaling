@@ -10,3 +10,5 @@ Instructions:
 
 Run the R scripts in the Analysis folder to reproduce the results. Please note that there is a switch (line to uncomment) to reproduce some of the supplementary results.
 
+<a href="https://zenodo.org/badge/DOI/10.5281/zenodo.16760270"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.16760270.svg" alt="DOI"></a>
+
