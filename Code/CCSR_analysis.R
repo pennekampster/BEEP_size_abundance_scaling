@@ -219,9 +219,9 @@ dat3 <- dat3 %>% mutate(time = day)
 
 # Code with switch to run analysis on realized rather than initial richness
 dat4 <- dat3 %>% ungroup() %>% mutate(temp_c = temperature - mean(temperature, na.rm=T),
-                                      # uncomment if analysis should be run on realized rather than initial richness
                                       rich_c = richness - mean(richness, na.rm=T),
-                                      rich_c = rel_richness - mean(rel_richness, na.rm=T),
+                                      # uncomment if analysis should be run on realized rather than initial richness
+                                      #rich_c = rel_richness - mean(rel_richness, na.rm=T),
                                       major_c = mean_major - median(mean_major, na.rm=T),
                                       volume_c = mean_volume - mean(mean_volume, na.rm=T),
                                       temp_fac = as.factor(temperature),
