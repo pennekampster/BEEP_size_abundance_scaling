@@ -1,25 +1,16 @@
 library(tidyverse)
+library(plyr)
 library(modelsummary)
 library(sjPlot)
-library(sjmisc)
-library(ggeffects)
-library(interactions)
 library(ggthemes)
-library(lubridate)
 library(here)
 library(viridis)
 library(lme4)
 library(lmerTest)
 library(broom.mixed)
-library(car)
-library(DHARMa)
 library(merTools)
-library(dotwhisker)
-library('mgcv')
-library(mgcViz)
 library(patchwork)
-library(viridisLite)
-
+library(nlme)
 
 # load raw dataset and remove lines with missing data
 dat <- read_csv("Data/Size_abundance_data.csv")
@@ -239,7 +230,7 @@ mods <- dat5 %>% mutate(mod_per_day = map(data, ~ posslmer(abundance ~ volume_c 
                                                            data=., 
                                                            na.action=na.omit)))
 
-fixed_per_day <-  plyr::ldply(map(mods$mod_per_day, ~ fixed.effects(.)))
+fixed_per_day <-  ldply(map(mods$mod_per_day, ~ fixed.effects(.)))
 confid_per_day <-  bind_rows(lapply(1:nrow(mods),
                                     function(x) tibble::rownames_to_column(as.data.frame(confint(mods$mod_per_day[[x]])))))
 
@@ -430,7 +421,7 @@ mods_sim <- dat5 %>% mutate(mod_per_day = map(data, ~ posslmer(log_abundance ~ v
                                                                na.action=na.omit)))
 
 
-fixed_per_day_sim <-  plyr::ldply(map(mods_sim$mod_per_day, ~ fixed.effects(.)))
+fixed_per_day_sim <-  ldply(map(mods_sim$mod_per_day, ~ fixed.effects(.)))
 
 confid_per_day_sim <-  bind_rows(lapply(1:nrow(mods_sim),
                                         function(x) tibble::rownames_to_column(as.data.frame(confint(mods_sim$mod_per_day[[x]])))))
